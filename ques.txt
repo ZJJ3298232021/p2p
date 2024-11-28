@@ -1,0 +1,54 @@
+我现在要写一个P2P基于bittorrent的类似迅雷的程序，项目目录文件如下：
+│  CMakeLists.txt
+│  example.jpg
+│  example.torrent
+│  p2p.h
+│  parse_torrent_file.c
+│  peer1.exe
+│  peer2.exe
+│  peer3.exe
+│  peer4.exe
+│  test.exe
+│  torrent.c
+│  torrent.exe
+│  tracker.exe
+│
+├─.idea
+│      .gitignore
+│      misc.xml
+│      modules.xml
+│      p2p.iml
+│      workspace.xml
+│
+├─peer1
+│  │  peer1.c
+│  │
+│  └─files
+│          example.jpg
+│
+├─peer2
+│  │  peer2.c
+│  │
+│  └─files
+│          example.jpg
+│
+├─peer3
+│  │  peer3.c
+│  │
+│  └─files
+│          example.jpg
+│
+├─peer4
+│      example.torrent
+│      peer4.c
+│
+└─tracker
+        tracker.c
+
+每个peer都能发送和接收数据，启动时自动向tracker注册，可以添加资源给tracker记录，也就是让服务器知道这个资源哪个Peer有，然后现在假设有四个Peer，三个Peer的files文件夹下有一个叫做example.jpg的文件，第四个没有，也就是说前三个peer需要向服务器发送添加资源的请求将files下的所有文件添加到tracker，第四个需要根据example.torrent文件获取这个图片，同时写一个生成torrent文件的程序在torrent.c中，生成的torrent文件包括文件名，tracker地址端口，哈希值，分块数。你现在要给出的代码包含我给你的目录中的所有.c/.h文件的代码.
+
+
+完善tracker和peer的功能，peer都有着添加资源到tracker的功能和注册到tracker功能，和文件分片传输功能和下载功能，其中peer需要启动时向tracker注册自己，如果peerx/files文件夹存在，将里面的文件注册到tracker，如果peerx下存在.torrent文件则向tracker请求拥有资源的peer然后向这些peer请求分块并进行哈希校验，完成后合并文件
+
+
+我想要这样：peer1/2/3都将自己注册到tracker，并且添加peerx/files下的所有文件并且生成torrent文件，peer4通过目录下的example.torrent文件向tracker寻找有这个文件的peer，然后根据torrent文件的分片数向这些peer下载分片并且使用哈希校验，你先给出p2p.h
