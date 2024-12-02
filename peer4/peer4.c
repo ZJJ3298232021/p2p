@@ -1,11 +1,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include "../p2p.h"
 #include "../torrent.h"
+#include <pthread.h>
+#define MAX_BLOCKS 1024
+
+typedef struct {
+    PeerInfo *peer;         // 当前 Peer 信息
+    TorrentFile *torrent;   // Torrent 文件信息
+    int *blocks;            // 负责的块集合
+    int num_blocks;         // 负责块的数量
+    char *pieces_dir;       // 块存储目录
+    long file_size;         // 文件大小
+    int *block_downloaded;  // 块下载状态
+} ThreadData;
 
 // Function to calculate the size of each block dynamically
 long calculate_block_size(long file_size, int total_blocks, int block_index) {
@@ -49,11 +59,12 @@ PeerInfo *query_peers_for_file(const char *tracker_ip, int tracker_port, const c
     return peers;
 }
 
+// Function to download block from peer
 int download_block_from_peer(const PeerInfo *peer, const TorrentFile *torrent, int block_index, char *block_path, long block_size) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         perror("Socket creation failed");
-        return 0; // 下载失败
+        return 0;
     }
 
     struct sockaddr_in peer_addr;
@@ -65,10 +76,9 @@ int download_block_from_peer(const PeerInfo *peer, const TorrentFile *torrent, i
     if (connect(sock, (struct sockaddr *)&peer_addr, sizeof(peer_addr)) < 0) {
         perror("Connection to peer failed");
         close(sock);
-        return 0; // 下载失败
+        return 0;
     }
 
-    // 构建发送的请求
     struct {
         char file_name[256];
         int block_index;
@@ -77,7 +87,6 @@ int download_block_from_peer(const PeerInfo *peer, const TorrentFile *torrent, i
     strncpy(request.file_name, torrent->file_name, sizeof(request.file_name));
     request.block_index = block_index;
 
-    // 一次性发送文件名和分片索引
     if (send(sock, &request, sizeof(request), 0) < 0) {
         perror("Failed to send file request");
         close(sock);
@@ -108,9 +117,28 @@ int download_block_from_peer(const PeerInfo *peer, const TorrentFile *torrent, i
     fclose(block_file);
     close(sock);
 
-    return received > 0 ? 1 : 0; // 如果成功接收数据，返回 1；否则返回 0
+    return received > 0 ? 1 : 0;
 }
 
+// Thread function
+void *thread_function(void *arg) {
+    ThreadData *data = (ThreadData *)arg;
+
+    for (int i = 0; i < data->num_blocks; i++) {
+        int block_index = data->blocks[i];
+        char block_path[512];
+        snprintf(block_path, sizeof(block_path), "%s/block_%d", data->pieces_dir, block_index);
+
+        long block_size = calculate_block_size(data->file_size, data->torrent->num_blocks, block_index);
+        if (download_block_from_peer(data->peer, data->torrent, block_index, block_path, block_size)) {
+            data->block_downloaded[block_index] = 1;
+        } else {
+            printf("Peer %d: Failed to download block %d\n", data->peer->peer_port, block_index);
+        }
+    }
+
+    pthread_exit(NULL);
+}
 
 void merge_blocks(const TorrentFile *torrent, const char *pieces_dir, const char *output_dir, long file_size) {
     char output_path[512];
@@ -152,7 +180,6 @@ void merge_blocks(const TorrentFile *torrent, const char *pieces_dir, const char
     fclose(output);
     printf("File %s downloaded and merged successfully.\n", torrent->file_name);
 }
-
 void process_torrent_files(const char *directory, const char *tracker_ip, int tracker_port) {
     DIR *dir = opendir(directory);
     if (!dir) {
@@ -175,6 +202,7 @@ void process_torrent_files(const char *directory, const char *tracker_ip, int tr
             printf("Parsed Torrent File: %s\n", torrent.file_name);
 
             int peer_count;
+            // 这个是从Tracker中返回的能够提供该服务的peers列表
             PeerInfo *peers = query_peers_for_file(tracker_ip, tracker_port, torrent.file_name, &peer_count);
 
             if (!peers || peer_count == 0) {
@@ -185,32 +213,49 @@ void process_torrent_files(const char *directory, const char *tracker_ip, int tr
 
             printf("Found %d peers with file %s.\n", peer_count, torrent.file_name);
 
-            // Get file size from torrent structure
             long file_size = torrent.file_size;
-
             int block_downloaded[MAX_BLOCKS] = {0};
+
+            pthread_t threads[peer_count];
+            ThreadData thread_data[peer_count];
+
+            // 初始化块分配数据
+            int *peer_blocks[peer_count];
+            int blocks_per_peer[peer_count];
+            memset(blocks_per_peer, 0, sizeof(blocks_per_peer));
+
+            for (int i = 0; i < peer_count; i++) {
+                peer_blocks[i] = malloc(sizeof(int) * (torrent.num_blocks / peer_count + 1));
+            }
+
+            // 按照块编号分配给对应的 Peer
             for (int i = 0; i < torrent.num_blocks; i++) {
-                for (int j = 0; j < peer_count; j++) {
-                    char block_path[512];
-                    snprintf(block_path, sizeof(block_path), "%s/block_%d", pieces_dir, i);
+                int peer_id = i % peer_count; // 根据块编号对 peer_count 取模
+                peer_blocks[peer_id][blocks_per_peer[peer_id]++] = i; // 添加到对应 Peer 的块集合中
+            }
 
-                    long block_size = calculate_block_size(file_size, torrent.num_blocks, i);
-                    if (download_block_from_peer(&peers[j], &torrent, i, block_path, block_size)) {
-                        block_downloaded[i] = 1;
-                        break;
-                    }
-                }
+            // 为每个 Peer 创建线程
+            for (int i = 0; i < peer_count; i++) {
+                thread_data[i].peer = &peers[i];
+                thread_data[i].torrent = &torrent;
+                thread_data[i].pieces_dir = pieces_dir;
+                thread_data[i].file_size = file_size;
+                thread_data[i].block_downloaded = block_downloaded;
+                thread_data[i].blocks = peer_blocks[i];
+                thread_data[i].num_blocks = blocks_per_peer[i];
 
-                if (!block_downloaded[i]) {
-                    printf("Failed to download block %d. Aborting...\n", i);
-                    free(peers);
-                    closedir(dir);
-                    return;
+                if (pthread_create(&threads[i], NULL, thread_function, &thread_data[i]) != 0) {
+                    perror("Failed to create thread");
                 }
             }
 
-            merge_blocks(&torrent, pieces_dir, directory, file_size);
+            // 等待所有线程完成
+            for (int i = 0; i < peer_count; i++) {
+                pthread_join(threads[i], NULL);
+                free(peer_blocks[i]);
+            }
 
+            merge_blocks(&torrent, pieces_dir, directory, file_size);
             free(peers);
         }
     }

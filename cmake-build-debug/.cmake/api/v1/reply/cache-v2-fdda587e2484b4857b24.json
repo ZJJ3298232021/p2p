@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "r:/Code/p2p/cmake-build-debug"
+			"value" : "r:/edge download/qq/download/p2p/cmake-build-debug"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -431,7 +431,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "R:/Code/p2p/cmake-build-debug/CMakeFiles/pkgRedirects"
+			"value" : "R:/edge download/qq/download/p2p/cmake-build-debug/CMakeFiles/pkgRedirects"
 		},
 		{
 			"name" : "CMAKE_GENERATOR",
@@ -503,7 +503,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "R:/Code/p2p"
+			"value" : "R:/edge download/qq/download/p2p"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1126,50 +1126,6 @@
 			"value" : "FALSE"
 		},
 		{
-			"name" : "LIB_EAY",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to a library."
-				}
-			],
-			"type" : "FILEPATH",
-			"value" : "LIB_EAY-NOTFOUND"
-		},
-		{
-			"name" : "OPENSSL_INCLUDE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to a file."
-				}
-			],
-			"type" : "PATH",
-			"value" : "OPENSSL_INCLUDE_DIR-NOTFOUND"
-		},
-		{
-			"name" : "SSL_EAY",
-			"properties" : 
-			[
-				{
-					"name" : "ADVANCED",
-					"value" : "1"
-				},
-				{
-					"name" : "HELPSTRING",
-					"value" : "Path to a library."
-				}
-			],
-			"type" : "FILEPATH",
-			"value" : "SSL_EAY-NOTFOUND"
-		},
-		{
 			"name" : "_CMAKE_LINKER_PUSHPOP_STATE_SUPPORTED",
 			"properties" : 
 			[
@@ -1191,7 +1147,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "R:/Code/p2p/cmake-build-debug"
+			"value" : "R:/edge download/qq/download/p2p/cmake-build-debug"
 		},
 		{
 			"name" : "p2p_IS_TOP_LEVEL",
@@ -1215,7 +1171,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "R:/Code/p2p"
+			"value" : "R:/edge download/qq/download/p2p"
 		}
 	],
 	"kind" : "cache",

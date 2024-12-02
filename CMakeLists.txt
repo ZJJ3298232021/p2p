@@ -14,4 +14,6 @@ add_executable(p2p
         peer4/peer4.c
         torrent.c
         torrent.h
+        Test.c
+        Test.c
 )

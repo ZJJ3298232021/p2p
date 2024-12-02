@@ -1,4 +1,4 @@
-# Install script for directory: R:/Code/p2p
+# Install script for directory: R:/edge download/qq/download/p2p
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "R:/Code/p2p/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "R:/edge download/qq/download/p2p/cmake-build-debug/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

@@ -4,7 +4,5 @@
 9	1303	7544924123367198	CMakeFiles/p2p.dir/peer1/peer1.c.obj	ae6c18ea583038c1
 5	1436	7544917665085205	CMakeFiles/p2p.dir/tracker/tracker.c.obj	3d97f716491224e3
 111	1512	7544917666152870	CMakeFiles/p2p.dir/torrent.c.obj	942aabe4f13d5ba5
-134	309	7544917666383325	CMakeFiles/p2p.dir/tracker/test.c.obj	15d9dfcc1910ce39
 45	1501	7544917665485542	CMakeFiles/p2p.dir/peer2/peer2.c.obj	ed35560ff175cf83
-11	148	7544918745386658	CMakeFiles/p2p.dir/test.c.obj	93e72813d746c05c
-5	363	7544959306049042	build.ninja	421a4c3e7d14c32f
+5	363	7547566441168686	build.ninja	421a4c3e7d14c32f

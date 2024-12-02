@@ -227,9 +227,9 @@ int main() {
     }
 #endif
 
-    const char *tracker_ip = "127.0.0.1"; // Tracker 的 IP
+    const char *tracker_ip = "192.168.216.235"; // Tracker 的 IP
     int tracker_port = TRACKER_PORT;     // Tracker 的端口
-    const char *peer_ip = "127.0.0.1";   // Peer 的 IP
+    const char *peer_ip = "192.168.216.148";   // Peer 的 IP
     int peer_port = 9002;                // 当前 Peer 的端口
     const char *files_directory = "peer2/files"; // 文件目录
 
